@@ -1,0 +1,38 @@
+name: App web (GitHub Pages)
+
+on:
+  push:
+    branches: [main]
+    paths: ['web/**', '.github/workflows/pages.yml']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v5
+
+      # Cada publicación cambia la versión del caché del service worker para que los teléfonos tomen la versión nueva
+      - name: Versionar caché
+        run: sed -i "s/diario-gym-v1/diario-gym-${{ github.run_number }}/" web/sw.js
+
+      - uses: actions/configure-pages@v5
+
+      - uses: actions/upload-pages-artifact@v4
+        with:
+          path: web
+
+      - id: deployment
+        uses: actions/deploy-pages@v4

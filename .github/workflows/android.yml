@@ -3,7 +3,9 @@ name: APK Android
 on:
   push:
     branches: [main]
+    paths-ignore: ['web/**', 'supabase/**', '.github/workflows/pages.yml']
   pull_request:
+    paths-ignore: ['web/**', 'supabase/**', '.github/workflows/pages.yml']
   workflow_dispatch:
 
 permissions:
