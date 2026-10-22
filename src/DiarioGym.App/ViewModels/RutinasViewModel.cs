@@ -41,7 +41,7 @@ public partial class RutinasViewModel : ObservableObject
 
     async Task EliminarAsync(int id, string nombre)
     {
-        var ok = await Shell.Current.DisplayAlert("Eliminar rutina", $"¿Eliminar “{nombre}”? Tus series registradas se conservan.", "Eliminar", "Cancelar");
+        var ok = await Shell.Current.DisplayAlertAsync("Eliminar rutina", $"¿Eliminar “{nombre}”? Tus series registradas se conservan.", "Eliminar", "Cancelar");
         if (!ok) return;
         await _rutinas.EliminarAsync(id);
         await CargarAsync();
