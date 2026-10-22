@@ -10,6 +10,17 @@ App Android personal para registrar **asistencia** al gym, **rutinas**, **series
 
 Cada push a `main` compila un APK nuevo (GitHub Actions) y lo publica en *Releases*.
 
+## App web para compartir (Android y iPhone)
+
+La carpeta `web/` es una PWA instalable con cuentas de usuario en **Supabase**: cada persona crea su cuenta y solo ve sus propios datos (Row Level Security). Se publica sola en **https://amagustinr.github.io/diario-gym/** con cada push a `main` que toque `web/` (workflow `pages.yml`).
+
+- `supabase/schema.sql`: tablas `perfiles`, `rutinas`, `asistencias`, `registros`, `pesos` y sus políticas RLS. Se ejecuta una vez en el SQL Editor de Supabase.
+- `web/config.js`: URL del proyecto y *anon key* (es pública por diseño; la seguridad la dan las políticas RLS).
+- Funciona sin señal: los cambios se guardan en el teléfono y se suben al volver la conexión.
+- Instalar: en Android, Chrome ofrece *Instalar app*; en iPhone, Safari → Compartir → *Añadir a pantalla de inicio*.
+
+Para probarla en tu PC: `cd web && python -m http.server 8000` y abre http://localhost:8000.
+
 ## Estructura (N-capas)
 
 ```
