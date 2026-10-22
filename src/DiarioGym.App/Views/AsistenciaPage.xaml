@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:DiarioGym.ViewModels"
+             x:Class="DiarioGym.Views.AsistenciaPage"
+             x:DataType="vm:AsistenciaViewModel"
+             Title="Asistencia">
+    <ScrollView>
+        <VerticalStackLayout Padding="16" Spacing="14">
+
+            <!-- Hoy -->
+            <Border Style="{StaticResource Tarjeta}">
+                <VerticalStackLayout Spacing="8">
+                    <Label Text="HOY" Style="{StaticResource Etiqueta}" />
+                    <Label Text="{Binding HoyDia}" Style="{StaticResource Titular}" />
+                    <Label Text="{Binding HoyMes}" Style="{StaticResource Apagado}" Margin="0,-6,0,6" />
+                    <Button Text="{Binding TextoBotonHoy}" Command="{Binding ToggleHoyCommand}"
+                            BackgroundColor="{Binding ColorBotonHoy}" HeightRequest="58" FontSize="18" />
+                </VerticalStackLayout>
+            </Border>
+
+            <!-- Resumen -->
+            <Border Style="{StaticResource Tarjeta}">
+                <VerticalStackLayout Spacing="12">
+                    <Grid ColumnDefinitions="*,*,*" ColumnSpacing="10">
+                        <VerticalStackLayout>
+                            <Label Style="{StaticResource Numero}">
+                                <Label.FormattedText>
+                                    <FormattedString>
+                                        <Span Text="{Binding Semana}" />
+                                        <Span Text="/" FontSize="16" />
+                                        <Span Text="{Binding Meta}" FontSize="16" />
+                                    </FormattedString>
+                                </Label.FormattedText>
+                            </Label>
+                            <Label Text="esta semana" Style="{StaticResource Apagado}" />
+                        </VerticalStackLayout>
+                        <VerticalStackLayout Grid.Column="1">
+                            <Label Text="{Binding Mes}" Style="{StaticResource Numero}" />
+                            <Label Text="este mes" Style="{StaticResource Apagado}" />
+                        </VerticalStackLayout>
+                        <VerticalStackLayout Grid.Column="2">
+                            <Label Text="{Binding Racha}" Style="{StaticResource Numero}"
+                                   TextColor="{AppThemeBinding Light={StaticResource Racha}, Dark={StaticResource RachaOscuro}}" />
+                            <Label Text="semanas seguidas cumpliendo la meta" Style="{StaticResource Apagado}" />
+                        </VerticalStackLayout>
+                    </Grid>
+                    <ProgressBar Progress="{Binding ProgresoSemana}" />
+                    <Grid ColumnDefinitions="*,Auto,Auto,Auto" ColumnSpacing="6">
+                        <Label Text="Meta semanal" Style="{StaticResource Apagado}" VerticalOptions="Center" />
+                        <Button Grid.Column="1" Text="−" Command="{Binding BajarMetaCommand}" Style="{StaticResource Fantasma}" WidthRequest="44" Padding="0" />
+                        <Label Grid.Column="2" Text="{Binding Meta}" FontAttributes="Bold" FontSize="18" VerticalOptions="Center" WidthRequest="26" HorizontalTextAlignment="Center" />
+                        <Button Grid.Column="3" Text="+" Command="{Binding SubirMetaCommand}" Style="{StaticResource Fantasma}" WidthRequest="44" Padding="0" />
+                    </Grid>
+                </VerticalStackLayout>
+            </Border>
+
+            <!-- Calendario -->
+            <Border Style="{StaticResource Tarjeta}">
+                <VerticalStackLayout Spacing="10">
+                    <Grid ColumnDefinitions="*,Auto">
+                        <Label Text="Últimas 16 semanas" Style="{StaticResource Seccion}" />
+                        <Label Grid.Column="1" Text="{Binding TotalTexto}" Style="{StaticResource Apagado}" VerticalOptions="Center" />
+                    </Grid>
+                    <GraphicsView x:Name="Mapa" HeightRequest="150">
+                        <GraphicsView.GestureRecognizers>
+                            <TapGestureRecognizer Tapped="OnMapaTapped" />
+                        </GraphicsView.GestureRecognizers>
+                    </GraphicsView>
+                    <Label Text="Toca un día para ver o completar ese entreno (columnas = semanas, lunes arriba)" Style="{StaticResource Apagado}" />
+                </VerticalStackLayout>
+            </Border>
+
+            <!-- Entreno del día -->
+            <Border x:Name="TarjetaEntreno" Style="{StaticResource Tarjeta}">
+                <VerticalStackLayout Spacing="10">
+                    <Grid ColumnDefinitions="*,Auto">
+                        <Label Text="{Binding TituloEntreno}" Style="{StaticResource Seccion}" VerticalOptions="Center" />
+                        <Button Grid.Column="1" Text="Volver a hoy" Style="{StaticResource Enlace}"
+                                Command="{Binding VolverAHoyCommand}" IsVisible="{Binding NoEsHoy}" />
+                    </Grid>
+
+                    <Label Text="Fecha del entreno" Style="{StaticResource Apagado}" />
+                    <DatePicker Date="{Binding FechaEntreno}" MaximumDate="{Binding Hoy}" Format="dddd d 'de' MMMM yyyy" />
+
+                    <Button Text="{Binding TextoBotonFecha}" Command="{Binding ToggleFechaCommand}"
+                            BackgroundColor="{Binding ColorBotonFecha}" IsVisible="{Binding NoEsHoy}" />
+
+                    <Label Text="Rutina" Style="{StaticResource Apagado}" />
+                    <Picker ItemsSource="{Binding Rutinas}" SelectedItem="{Binding RutinaSeleccionada}" Title="Elige una rutina" />
+
+                    <Label Text="Elige una rutina o anota un ejercicio suelto abajo." Style="{StaticResource Apagado}"
+                           IsVisible="{Binding SinEjercicios}" HorizontalTextAlignment="Center" Margin="0,8" />
+
+                    <VerticalStackLayout BindableLayout.ItemsSource="{Binding Ejercicios}" Spacing="0">
+                        <BindableLayout.ItemTemplate>
+                            <DataTemplate x:DataType="vm:EjercicioHoy">
+                                <VerticalStackLayout Spacing="8" Padding="0,10">
+                                    <BoxView Style="{StaticResource Separador}" Margin="0,0,0,4" />
+                                    <Label Text="{Binding Nombre}" FontAttributes="Bold" FontSize="16" />
+                                    <Label Text="{Binding Objetivo}" Style="{StaticResource Apagado}" IsVisible="{Binding EnRutina}" />
+                                    <FlexLayout Wrap="Wrap" BindableLayout.ItemsSource="{Binding Series}">
+                                        <BindableLayout.ItemTemplate>
+                                            <DataTemplate x:DataType="vm:SerieChip">
+                                                <Border Style="{StaticResource Chip}">
+                                                    <HorizontalStackLayout>
+                                                        <Label Text="{Binding Texto}" VerticalOptions="Center" />
+                                                        <Button Text="×" Style="{StaticResource ChipBorrar}"
+                                                                Command="{Binding BorrarCommand}" CommandParameter="{Binding .}" />
+                                                    </HorizontalStackLayout>
+                                                </Border>
+                                            </DataTemplate>
+                                        </BindableLayout.ItemTemplate>
+                                    </FlexLayout>
+                                    <Grid ColumnDefinitions="*,*,Auto" ColumnSpacing="8" IsVisible="{Binding EnRutina}">
+                                        <Entry Text="{Binding PesoTexto}" Placeholder="kg" Keyboard="Numeric" />
+                                        <Entry Grid.Column="1" Text="{Binding RepsTexto}" Placeholder="reps" Keyboard="Numeric" />
+                                        <Button Grid.Column="2" Text="+ Serie" Command="{Binding AgregarCommand}" />
+                                    </Grid>
+                                </VerticalStackLayout>
+                            </DataTemplate>
+                        </BindableLayout.ItemTemplate>
+                    </VerticalStackLayout>
+
+                    <BoxView Style="{StaticResource Separador}" />
+                    <Label Text="Otro ejercicio" FontAttributes="Bold" FontSize="16" />
+                    <Entry Text="{Binding OtroNombre}" Placeholder="Ej. Dominadas" />
+                    <Grid ColumnDefinitions="*,*,Auto" ColumnSpacing="8">
+                        <Entry Text="{Binding OtroPeso}" Placeholder="kg" Keyboard="Numeric" />
+                        <Entry Grid.Column="1" Text="{Binding OtroReps}" Placeholder="reps" Keyboard="Numeric" />
+                        <Button Grid.Column="2" Text="+ Serie" Command="{Binding AgregarSerieOtroCommand}" />
+                    </Grid>
+                    <Label Text="{Binding Aviso}" Style="{StaticResource Apagado}" FontAttributes="Bold" HorizontalTextAlignment="Center" />
+                </VerticalStackLayout>
+            </Border>
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

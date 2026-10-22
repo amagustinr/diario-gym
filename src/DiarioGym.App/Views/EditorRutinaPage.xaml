@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:DiarioGym.ViewModels"
+             x:Class="DiarioGym.Views.EditorRutinaPage"
+             x:DataType="vm:EditorRutinaViewModel"
+             Title="{Binding Titulo}">
+    <ScrollView>
+        <VerticalStackLayout Padding="16" Spacing="12">
+            <Label Text="Nombre" Style="{StaticResource Apagado}" />
+            <Entry Text="{Binding Nombre}" Placeholder="Ej. Pierna" />
+
+            <Label Text="Días" Style="{StaticResource Apagado}" />
+            <HorizontalStackLayout BindableLayout.ItemsSource="{Binding Dias}" Spacing="6">
+                <BindableLayout.ItemTemplate>
+                    <DataTemplate x:DataType="vm:DiaToggle">
+                        <Button Text="{Binding Letra}" Command="{Binding ToggleCommand}"
+                                BackgroundColor="{Binding Fondo}" TextColor="{Binding ColorTexto}"
+                                BorderColor="{AppThemeBinding Light={StaticResource Linea}, Dark={StaticResource LineaOscuro}}" BorderWidth="1"
+                                WidthRequest="42" HeightRequest="42" CornerRadius="21" Padding="0" />
+                    </DataTemplate>
+                </BindableLayout.ItemTemplate>
+            </HorizontalStackLayout>
+
+            <Label Text="Ejercicios (series · reps · kg objetivo)" Style="{StaticResource Apagado}" Margin="0,8,0,0" />
+            <VerticalStackLayout BindableLayout.ItemsSource="{Binding Ejercicios}" Spacing="10">
+                <BindableLayout.ItemTemplate>
+                    <DataTemplate x:DataType="vm:EjercicioEdit">
+                        <Border Style="{StaticResource Tarjeta}" Padding="12">
+                            <Grid ColumnDefinitions="*,*,*,Auto" RowDefinitions="Auto,Auto" ColumnSpacing="6" RowSpacing="4">
+                                <Entry Grid.ColumnSpan="4" Text="{Binding Nombre}" Placeholder="Ejercicio" />
+                                <Entry Grid.Row="1" Text="{Binding Series}" Placeholder="Series" Keyboard="Numeric" />
+                                <Entry Grid.Row="1" Grid.Column="1" Text="{Binding Reps}" Placeholder="Reps" Keyboard="Numeric" />
+                                <Entry Grid.Row="1" Grid.Column="2" Text="{Binding Peso}" Placeholder="kg" Keyboard="Numeric" />
+                                <Button Grid.Row="1" Grid.Column="3" Text="×" Style="{StaticResource Fantasma}" WidthRequest="44" Padding="0"
+                                        Command="{Binding QuitarCommand}" />
+                            </Grid>
+                        </Border>
+                    </DataTemplate>
+                </BindableLayout.ItemTemplate>
+            </VerticalStackLayout>
+            <Button Text="+ Añadir ejercicio" Style="{StaticResource Fantasma}" Command="{Binding AgregarEjercicioCommand}" />
+
+            <Label Text="{Binding Aviso}" TextColor="{AppThemeBinding Light={StaticResource Mal}, Dark={StaticResource MalOscuro}}" />
+            <Grid ColumnDefinitions="*,*" ColumnSpacing="10">
+                <Button Text="Guardar rutina" Command="{Binding GuardarCommand}" />
+                <Button Grid.Column="1" Text="Cancelar" Style="{StaticResource Fantasma}" Command="{Binding CancelarCommand}" />
+            </Grid>
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

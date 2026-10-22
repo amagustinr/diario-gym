@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:DiarioGym.ViewModels"
+             x:Class="DiarioGym.Views.PesoPage"
+             x:DataType="vm:PesoViewModel"
+             Title="Peso">
+    <ScrollView>
+        <VerticalStackLayout Padding="16" Spacing="14">
+
+            <!-- Registrar -->
+            <Border Style="{StaticResource Tarjeta}">
+                <VerticalStackLayout Spacing="10">
+                    <Label Text="Registrar peso" Style="{StaticResource Seccion}" />
+                    <Grid ColumnDefinitions="*,*" ColumnSpacing="10">
+                        <VerticalStackLayout>
+                            <Label Text="Fecha" Style="{StaticResource Apagado}" />
+                            <DatePicker Date="{Binding FechaRegistro}" MaximumDate="{Binding Hoy}" Format="d MMM yyyy" />
+                        </VerticalStackLayout>
+                        <VerticalStackLayout Grid.Column="1">
+                            <Label Text="Peso (kg)" Style="{StaticResource Apagado}" />
+                            <Entry Text="{Binding KgTexto}" Keyboard="Numeric" Placeholder="78,5" />
+                        </VerticalStackLayout>
+                    </Grid>
+                    <Button Text="Guardar peso" Command="{Binding GuardarCommand}" />
+                    <Label Text="{Binding Aviso}" Style="{StaticResource Apagado}" FontAttributes="Bold" HorizontalTextAlignment="Center" />
+                    <Label Text="Completa tu perfil abajo (altura, sexo y fecha de nacimiento) para calcular tu IMC y % de grasa."
+                           Style="{StaticResource Apagado}" IsVisible="{Binding PerfilIncompleto}" />
+                </VerticalStackLayout>
+            </Border>
+
+            <!-- Resumen y gráfica -->
+            <Border Style="{StaticResource Tarjeta}">
+                <VerticalStackLayout Spacing="12">
+                    <Grid ColumnDefinitions="*,*,*" RowDefinitions="Auto,Auto" ColumnSpacing="10" RowSpacing="12">
+                        <VerticalStackLayout>
+                            <Label Text="{Binding Actual}" Style="{StaticResource Numero}" />
+                            <Label Text="kg actual" Style="{StaticResource Apagado}" />
+                        </VerticalStackLayout>
+                        <VerticalStackLayout Grid.Column="1">
+                            <Label Text="{Binding Cambio30}" Style="{StaticResource Numero}" />
+                            <Label Text="kg en 30 días" Style="{StaticResource Apagado}" />
+                        </VerticalStackLayout>
+                        <VerticalStackLayout Grid.Column="2">
+                            <Label Text="{Binding CambioTotal}" Style="{StaticResource Numero}" />
+                            <Label Text="kg desde el inicio" Style="{StaticResource Apagado}" />
+                        </VerticalStackLayout>
+                        <VerticalStackLayout Grid.Row="1">
+                            <Label Text="{Binding Imc}" Style="{StaticResource Numero}" />
+                            <Label Text="{Binding ImcEtiqueta}" Style="{StaticResource Apagado}" />
+                        </VerticalStackLayout>
+                        <VerticalStackLayout Grid.Row="1" Grid.Column="1">
+                            <Label Text="{Binding Grasa}" Style="{StaticResource Numero}" />
+                            <Label Text="% grasa estimado" Style="{StaticResource Apagado}" />
+                        </VerticalStackLayout>
+                        <VerticalStackLayout Grid.Row="1" Grid.Column="2">
+                            <Label Text="{Binding Magra}" Style="{StaticResource Numero}" />
+                            <Label Text="kg masa magra" Style="{StaticResource Apagado}" />
+                        </VerticalStackLayout>
+                    </Grid>
+
+                    <Border StrokeShape="RoundRectangle 10" StrokeThickness="1" Padding="0"
+                            Stroke="{AppThemeBinding Light={StaticResource Linea}, Dark={StaticResource LineaOscuro}}">
+                        <Grid ColumnDefinitions="*,*">
+                            <Button Text="Peso" Command="{Binding CambiarGraficaCommand}" CommandParameter="kg"
+                                    BackgroundColor="{Binding FondoKg}" TextColor="{Binding TextoKg}" CornerRadius="0" />
+                            <Button Grid.Column="1" Text="% grasa" Command="{Binding CambiarGraficaCommand}" CommandParameter="gr"
+                                    BackgroundColor="{Binding FondoGrasa}" TextColor="{Binding TextoGrasa}" CornerRadius="0" />
+                        </Grid>
+                    </Border>
+                    <GraphicsView x:Name="Grafica" HeightRequest="210" />
+
+                    <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10">
+                        <VerticalStackLayout>
+                            <Label Text="Peso meta (kg)" Style="{StaticResource Apagado}" />
+                            <Entry Text="{Binding MetaTexto}" Keyboard="Numeric" />
+                        </VerticalStackLayout>
+                        <Button Grid.Column="1" Text="Guardar meta" Style="{StaticResource Fantasma}" VerticalOptions="End"
+                                Command="{Binding GuardarMetaCommand}" />
+                    </Grid>
+                    <Label Text="{Binding FaltaMeta}" IsVisible="{Binding HayFaltaMeta}" Style="{StaticResource Apagado}" />
+                </VerticalStackLayout>
+            </Border>
+
+            <!-- Perfil -->
+            <Border Style="{StaticResource Tarjeta}">
+                <VerticalStackLayout Spacing="10">
+                    <Label Text="Mi perfil" Style="{StaticResource Seccion}" />
+                    <Grid ColumnDefinitions="*,*" ColumnSpacing="10">
+                        <VerticalStackLayout>
+                            <Label Text="Altura (cm)" Style="{StaticResource Apagado}" />
+                            <Entry Text="{Binding AlturaTexto}" Keyboard="Numeric" Placeholder="175" />
+                        </VerticalStackLayout>
+                        <VerticalStackLayout Grid.Column="1">
+                            <Label Text="Sexo" Style="{StaticResource Apagado}" />
+                            <Picker ItemsSource="{Binding Sexos}" SelectedItem="{Binding Sexo}" Title="Elegir" />
+                        </VerticalStackLayout>
+                    </Grid>
+                    <Label Text="Fecha de nacimiento" Style="{StaticResource Apagado}" />
+                    <DatePicker Date="{Binding Nacimiento}" MaximumDate="{Binding Hoy}" Format="d MMM yyyy" />
+                    <Button Text="Guardar perfil" Style="{StaticResource Fantasma}" Command="{Binding GuardarPerfilCommand}" />
+                    <Label Style="{StaticResource Apagado}" FontSize="12"
+                           Text="El % de grasa se estima con la fórmula de Deurenberg: 1,2 × IMC + 0,23 × edad − 10,8 × sexo (1 hombre, 0 mujer) − 5,4. Es una aproximación: si tienes mucha masa muscular, el IMC sobreestima la grasa." />
+                </VerticalStackLayout>
+            </Border>
+
+            <!-- Historial -->
+            <Border Style="{StaticResource Tarjeta}">
+                <VerticalStackLayout Spacing="4">
+                    <Label Text="Historial" Style="{StaticResource Seccion}" />
+                    <Label Text="Aún no hay registros. Anota tu peso de hoy arriba." Style="{StaticResource Apagado}"
+                           IsVisible="{Binding SinHistorial}" HorizontalTextAlignment="Center" Margin="0,10" />
+                    <VerticalStackLayout BindableLayout.ItemsSource="{Binding Historial}">
+                        <BindableLayout.ItemTemplate>
+                            <DataTemplate x:DataType="vm:PesoFila">
+                                <VerticalStackLayout>
+                                    <Grid ColumnDefinitions="*,Auto,Auto,Auto" ColumnSpacing="8" Padding="0,10">
+                                        <VerticalStackLayout VerticalOptions="Center">
+                                            <Label Text="{Binding Titulo}" FontAttributes="Bold" />
+                                            <Label Text="{Binding Detalle}" Style="{StaticResource Apagado}" />
+                                        </VerticalStackLayout>
+                                        <Label Grid.Column="1" Text="{Binding KgTexto}" FontSize="18" FontAttributes="Bold" VerticalOptions="Center" />
+                                        <Label Grid.Column="2" Text="{Binding DeltaTexto}" TextColor="{Binding DeltaColor}" VerticalOptions="Center" />
+                                        <Button Grid.Column="3" Text="×" Style="{StaticResource Fantasma}" WidthRequest="40" Padding="0"
+                                                Command="{Binding BorrarCommand}" />
+                                    </Grid>
+                                    <BoxView Style="{StaticResource Separador}" />
+                                </VerticalStackLayout>
+                            </DataTemplate>
+                        </BindableLayout.ItemTemplate>
+                    </VerticalStackLayout>
+                </VerticalStackLayout>
+            </Border>
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

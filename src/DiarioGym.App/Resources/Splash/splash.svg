@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="456" height="456" viewBox="0 0 456 456" xmlns="http://www.w3.org/2000/svg">
+  <!-- Mancuerna -->
+  <rect x="150" y="218" width="156" height="20" rx="6" fill="#FFFFFF" />
+  <rect x="128" y="170" width="30" height="116" rx="8" fill="#FFFFFF" />
+  <rect x="98" y="188" width="26" height="80" rx="8" fill="#F2C230" />
+  <rect x="298" y="170" width="30" height="116" rx="8" fill="#FFFFFF" />
+  <rect x="332" y="188" width="26" height="80" rx="8" fill="#F2C230" />
+</svg>

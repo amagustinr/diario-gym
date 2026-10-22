@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<ResourceDictionary xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml">
+    <!-- Colores de los discos olímpicos: azul 20 kg y amarillo 15 kg -->
+    <Color x:Key="Fondo">#ECEEF1</Color>
+    <Color x:Key="FondoOscuro">#0F1216</Color>
+    <Color x:Key="Superficie">#FFFFFF</Color>
+    <Color x:Key="SuperficieOscuro">#181C22</Color>
+    <Color x:Key="Tinta">#14171C</Color>
+    <Color x:Key="TintaOscuro">#E8EBF0</Color>
+    <Color x:Key="Apagado">#5A6371</Color>
+    <Color x:Key="ApagadoOscuro">#98A1AF</Color>
+    <Color x:Key="Linea">#D6DAE1</Color>
+    <Color x:Key="LineaOscuro">#2A3039</Color>
+    <Color x:Key="Acento">#1F4FD1</Color>
+    <Color x:Key="AcentoOscuro">#7097FF</Color>
+    <Color x:Key="AcentoTexto">#FFFFFF</Color>
+    <Color x:Key="AcentoTextoOscuro">#0A0E19</Color>
+    <Color x:Key="AcentoSuave">#DCE5FB</Color>
+    <Color x:Key="AcentoSuaveOscuro">#1E2A47</Color>
+    <Color x:Key="Racha">#C99600</Color>
+    <Color x:Key="RachaOscuro">#F2C230</Color>
+    <Color x:Key="Bien">#1D8A57</Color>
+    <Color x:Key="BienOscuro">#45C58E</Color>
+    <Color x:Key="Mal">#C3362C</Color>
+    <Color x:Key="MalOscuro">#FF6F62</Color>
+    <Color x:Key="Celda">#DCE0E6</Color>
+    <Color x:Key="CeldaOscuro">#232933</Color>
+</ResourceDictionary>

@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:DiarioGym.ViewModels"
+             x:Class="DiarioGym.Views.EvolucionPage"
+             x:DataType="vm:EvolucionViewModel"
+             Title="Evolución">
+    <ScrollView>
+        <VerticalStackLayout Padding="16" Spacing="14">
+
+            <Border Style="{StaticResource Tarjeta}" IsVisible="{Binding SinDatos}">
+                <Label Text="Cuando registres series en la pestaña Asistencia verás aquí cómo progresas en cada ejercicio: peso máximo, 1RM estimado y volumen."
+                       Style="{StaticResource Apagado}" HorizontalTextAlignment="Center" />
+            </Border>
+
+            <Border Style="{StaticResource Tarjeta}" IsVisible="{Binding HayDatos}">
+                <VerticalStackLayout Spacing="12">
+                    <Label Text="Ejercicio" Style="{StaticResource Apagado}" />
+                    <Picker ItemsSource="{Binding Ejercicios}" SelectedItem="{Binding EjercicioSeleccionado}" Title="Elige un ejercicio" />
+
+                    <Grid ColumnDefinitions="*,*,*" ColumnSpacing="10">
+                        <VerticalStackLayout>
+                            <Label Text="{Binding MejorPeso}" Style="{StaticResource Numero}" />
+                            <Label Text="kg máximo" Style="{StaticResource Apagado}" />
+                        </VerticalStackLayout>
+                        <VerticalStackLayout Grid.Column="1">
+                            <Label Text="{Binding MejorRm}" Style="{StaticResource Numero}" />
+                            <Label Text="kg 1RM estimado" Style="{StaticResource Apagado}" />
+                        </VerticalStackLayout>
+                        <VerticalStackLayout Grid.Column="2">
+                            <Label Text="{Binding Cambio}" Style="{StaticResource Numero}" TextColor="{Binding ColorCambio}" />
+                            <Label Text="kg desde la 1.ª sesión" Style="{StaticResource Apagado}" />
+                        </VerticalStackLayout>
+                    </Grid>
+
+                    <Border StrokeShape="RoundRectangle 10" StrokeThickness="1" Padding="0"
+                            Stroke="{AppThemeBinding Light={StaticResource Linea}, Dark={StaticResource LineaOscuro}}">
+                        <Grid ColumnDefinitions="*,*,*">
+                            <Button Text="Peso máx." Command="{Binding CambiarMetricaCommand}" CommandParameter="max"
+                                    BackgroundColor="{Binding FondoMax}" TextColor="{Binding TextoMax}" CornerRadius="0" />
+                            <Button Grid.Column="1" Text="1RM est." Command="{Binding CambiarMetricaCommand}" CommandParameter="rm"
+                                    BackgroundColor="{Binding FondoRm}" TextColor="{Binding TextoRm}" CornerRadius="0" />
+                            <Button Grid.Column="2" Text="Volumen" Command="{Binding CambiarMetricaCommand}" CommandParameter="vol"
+                                    BackgroundColor="{Binding FondoVol}" TextColor="{Binding TextoVol}" CornerRadius="0" />
+                        </Grid>
+                    </Border>
+
+                    <GraphicsView x:Name="Grafica" HeightRequest="210" />
+                    <Label Text="1RM estimado con la fórmula de Epley: peso × (1 + reps/30). Volumen = suma de kg × reps del día."
+                           Style="{StaticResource Apagado}" FontSize="12" />
+                </VerticalStackLayout>
+            </Border>
+
+            <Border Style="{StaticResource Tarjeta}" IsVisible="{Binding HayDatos}">
+                <VerticalStackLayout Spacing="4">
+                    <Label Text="{Binding TituloHistorial}" Style="{StaticResource Seccion}" />
+                    <VerticalStackLayout BindableLayout.ItemsSource="{Binding Historial}">
+                        <BindableLayout.ItemTemplate>
+                            <DataTemplate x:DataType="vm:DiaHistorial">
+                                <VerticalStackLayout Spacing="6" Padding="0,10">
+                                    <Grid ColumnDefinitions="*,Auto">
+                                        <Label Text="{Binding Titulo}" FontAttributes="Bold" />
+                                        <Label Grid.Column="1" Text="{Binding Detalle}" Style="{StaticResource Apagado}" />
+                                    </Grid>
+                                    <FlexLayout Wrap="Wrap" BindableLayout.ItemsSource="{Binding Series}">
+                                        <BindableLayout.ItemTemplate>
+                                            <DataTemplate x:DataType="vm:SerieChip">
+                                                <Border Style="{StaticResource Chip}">
+                                                    <HorizontalStackLayout>
+                                                        <Label Text="{Binding Texto}" VerticalOptions="Center" />
+                                                        <Button Text="×" Style="{StaticResource ChipBorrar}"
+                                                                Command="{Binding BorrarCommand}" CommandParameter="{Binding .}" />
+                                                    </HorizontalStackLayout>
+                                                </Border>
+                                            </DataTemplate>
+                                        </BindableLayout.ItemTemplate>
+                                    </FlexLayout>
+                                    <BoxView Style="{StaticResource Separador}" />
+                                </VerticalStackLayout>
+                            </DataTemplate>
+                        </BindableLayout.ItemTemplate>
+                    </VerticalStackLayout>
+                </VerticalStackLayout>
+            </Border>
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

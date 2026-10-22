@@ -1,0 +1,80 @@
+name: APK Android
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: |
+            8.0.x
+            10.0.x
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: microsoft
+          java-version: '17'
+
+      - name: Pruebas de la capa de negocio y datos
+        run: dotnet test tests/DiarioGym.Core.Tests
+
+      - name: Instalar workload de MAUI Android
+        run: dotnet workload install maui-android
+
+      - name: Instalar dependencias del SDK de Android
+        run: >
+          dotnet build src/DiarioGym.App/DiarioGym.App.csproj -t:InstallAndroidDependencies -f net10.0-android
+          "-p:AndroidSdkDirectory=$ANDROID_SDK_ROOT" -p:AcceptAndroidSDKLicenses=True
+
+      # Si existen los secretos ANDROID_KEYSTORE_BASE64 y ANDROID_KEYSTORE_PASSWORD, el APK se firma con tu llave
+      # (necesario para instalar actualizaciones encima sin desinstalar). Si no, se firma con una llave de depuración.
+      - name: Preparar firma
+        env:
+          KEYSTORE_B64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          KEYSTORE_PASS: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+        run: |
+          if [ -n "$KEYSTORE_B64" ]; then
+            echo "$KEYSTORE_B64" | base64 -d > "$RUNNER_TEMP/diariogym.keystore"
+            echo "FIRMA=-p:AndroidKeyStore=true -p:AndroidSigningKeyStore=$RUNNER_TEMP/diariogym.keystore -p:AndroidSigningKeyAlias=diariogym -p:AndroidSigningKeyPass=$KEYSTORE_PASS -p:AndroidSigningStorePass=$KEYSTORE_PASS" >> "$GITHUB_ENV"
+          else
+            echo "FIRMA=" >> "$GITHUB_ENV"
+          fi
+
+      - name: Compilar APK
+        run: >
+          dotnet publish src/DiarioGym.App/DiarioGym.App.csproj -f net10.0-android -c Release -o out
+          "-p:AndroidSdkDirectory=$ANDROID_SDK_ROOT"
+          -p:ApplicationVersion=${{ github.run_number }}
+          -p:ApplicationDisplayVersion=1.0.${{ github.run_number }}
+          $FIRMA
+
+      - name: Renombrar APK
+        run: |
+          ls -la out
+          cp out/*-Signed.apk diario-gym.apk
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: diario-gym-apk
+          path: diario-gym.apk
+
+      - name: Publicar versión descargable
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "v1.0.${{ github.run_number }}" diario-gym.apk \
+            --title "Diario de Gym 1.0.${{ github.run_number }}" \
+            --notes "APK para Android. Descárgalo desde el celular e instálalo." \
+            --latest

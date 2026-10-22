@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<Shell xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+       xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+       xmlns:views="clr-namespace:DiarioGym.Views"
+       x:Class="DiarioGym.AppShell"
+       Shell.FlyoutBehavior="Disabled"
+       Title="Diario de Gym">
+    <TabBar>
+        <ShellContent Title="Asistencia" Icon="tab_asistencia.png" Route="asistencia"
+                      ContentTemplate="{DataTemplate views:AsistenciaPage}" />
+        <ShellContent Title="Rutinas" Icon="tab_rutinas.png" Route="rutinas"
+                      ContentTemplate="{DataTemplate views:RutinasPage}" />
+        <ShellContent Title="Evolución" Icon="tab_evolucion.png" Route="evolucion"
+                      ContentTemplate="{DataTemplate views:EvolucionPage}" />
+        <ShellContent Title="Peso" Icon="tab_peso.png" Route="peso"
+                      ContentTemplate="{DataTemplate views:PesoPage}" />
+    </TabBar>
+</Shell>
