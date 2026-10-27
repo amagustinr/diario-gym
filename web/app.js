@@ -137,6 +137,7 @@ let pend=false;
 function schedule(){if(pend)return;pend=true;requestAnimationFrame(()=>{pend=false;render()})}
 function render(){
   if(!S.mode)return;
+  if(arr){arr.pendiente=true;return}
   const a=document.activeElement,fid=a&&a.id;let sel=null;try{sel=a.selectionStart}catch(e){}
   const dentro=!!S.user&&S.auth.vista!=="nueva";
   $("#tabs").hidden=!dentro;
@@ -218,6 +219,60 @@ function tipInstalar(){
     <button class="link" data-act="tip-ok" style="align-self:flex-start">Entendido</button></section>`;
 }
 if("serviceWorker" in navigator&&location.protocol==="https:")navigator.serviceWorker.register("sw.js").catch(()=>{});
+/* ---------- Ordenar arrastrando (rutinas y ejercicios de una rutina) ---------- */
+// El bloque sigue al dedo saltando de hueco en hueco; al soltar se guarda el nuevo orden.
+let arr=null;
+const itemsDe=lista=>[...lista.children].filter(n=>n.dataset.item!==undefined);
+const ordenDe=lista=>itemsDe(lista).map(n=>n.dataset.item);
+function moverSegunY(y){
+  const {item,lista}=arr;
+  for(const o of itemsDe(lista)){
+    if(o===item)continue;
+    const r=o.getBoundingClientRect(),mid=r.top+r.height/2,antes=item.compareDocumentPosition(o)&Node.DOCUMENT_POSITION_PRECEDING;
+    if(antes&&y<mid){lista.insertBefore(item,o);return}
+    if(!antes&&y>mid){lista.insertBefore(item,o.nextSibling);return}
+  }
+}
+function autoScroll(){
+  if(!arr)return;
+  const m=90,y=arr.y,abajo=innerHeight-m-60,v=y<m?-(m-y)/5:y>abajo?(y-abajo)/5:0;
+  if(v){scrollBy(0,v);moverSegunY(y)}
+  arr.raf=requestAnimationFrame(autoScroll);
+}
+function aplicarOrden(lista,orden){
+  if(lista.dataset.lista==="ejercicios"&&E)E.ejercicios=orden.map(i=>E.ejercicios[Number(i)]);
+  else if(lista.dataset.lista==="rutinas")orden.forEach((id,i)=>{const r=S.data.rutinas[id];if(r&&r.orden!==i)put("rutinas",id,{...r,orden:i})});
+}
+function soltar(){
+  if(!arr)return;
+  const {item,lista,inicio}=arr,orden=ordenDe(lista);
+  cancelAnimationFrame(arr.raf);item.classList.remove("arrastrando");document.body.classList.remove("arrastrando");
+  arr=null;
+  if(orden.join()!==inicio)aplicarOrden(lista,orden);
+  render();
+}
+document.addEventListener("pointerdown",ev=>{
+  const h=ev.target.closest("[data-drag]");if(!h||arr||ev.button>0)return;
+  const item=h.closest("[data-item]"),lista=item&&item.parentElement;if(!lista||!lista.dataset.lista)return;
+  ev.preventDefault();try{h.setPointerCapture(ev.pointerId)}catch(e){}
+  arr={item,lista,y:ev.clientY,inicio:ordenDe(lista).join()};
+  item.classList.add("arrastrando");document.body.classList.add("arrastrando");
+  try{navigator.vibrate&&navigator.vibrate(10)}catch(e){}
+  arr.raf=requestAnimationFrame(autoScroll);
+});
+document.addEventListener("pointermove",ev=>{if(!arr)return;arr.y=ev.clientY;moverSegunY(ev.clientY)});
+document.addEventListener("pointerup",soltar);
+document.addEventListener("pointercancel",soltar);
+// Con teclado: flechas arriba/abajo sobre el asa
+document.addEventListener("keydown",ev=>{
+  const h=ev.target.closest&&ev.target.closest("[data-drag]");if(!h||(ev.key!=="ArrowUp"&&ev.key!=="ArrowDown"))return;
+  const item=h.closest("[data-item]"),lista=item.parentElement,its=itemsDe(lista),i=its.indexOf(item),j=ev.key==="ArrowUp"?i-1:i+1;
+  if(j<0||j>=its.length)return;ev.preventDefault();
+  lista.insertBefore(item,ev.key==="ArrowUp"?its[j]:its[j].nextSibling);
+  const tipo=lista.dataset.lista;aplicarOrden(lista,ordenDe(lista));render();
+  const nueva=document.querySelector(`[data-lista="${tipo}"]`),n=nueva&&itemsDe(nueva)[j];n&&n.querySelector("[data-drag]").focus();
+});
+
 let tt;
 function toast(m){const t=$("#toast");t.textContent=m;t.hidden=false;clearTimeout(tt);tt=setTimeout(()=>t.hidden=true,2600)}
 
@@ -331,19 +386,20 @@ function vHoy(){
 }
 
 /* ---------- Vista: Rutinas ---------- */
+const DRAG='<button type="button" class="drag" data-drag aria-label="Arrastra para cambiar el orden"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="6" r="1.6"/><circle cx="15" cy="6" r="1.6"/><circle cx="9" cy="12" r="1.6"/><circle cx="15" cy="12" r="1.6"/><circle cx="9" cy="18" r="1.6"/><circle cx="15" cy="18" r="1.6"/></svg></button>';
 function vRutinas(){
   if(E)return vEditor();
   const rs=rutinas();
-  const cards=rs.map(r=>`<section class="card">
-    <div class="row between"><h3>${esc(r.nombre)}</h3><div class="days">${DIAS.map((d,i)=>`<span class="day mini ${(r.dias||[]).includes(i)?"on":""}" aria-hidden="true">${d}</span>`).join("")}</div></div>
+  const cards=rs.map(r=>`<section class="card" data-item="${r.id}">
+    <div class="row between"><div class="row" style="gap:4px">${rs.length>1?DRAG:""}<h3>${esc(r.nombre)}</h3></div><div class="days">${DIAS.map((d,i)=>`<span class="day mini ${(r.dias||[]).includes(i)?"on":""}" aria-hidden="true">${d}</span>`).join("")}</div></div>
     <ul class="ej-list">${(r.ejercicios||[]).map(e=>`<li><span>${esc(e.nombre)}</span><span>${e.series||"?"}×${e.reps||"?"}${e.peso?" · "+n1(e.peso)+" kg":""}</span></li>`).join("")||'<li class="muted">Sin ejercicios</li>'}</ul>
     ${confirmar===r.id?`<div class="confirm"><span>¿Eliminar “${esc(r.nombre)}”? Tus series registradas se conservan.</span><button class="btn danger sm" data-act="delrut-si" data-id="${r.id}">Eliminar</button><button class="btn ghost sm" data-act="cancel">Cancelar</button></div>`
      :`<div class="row"><button class="btn ghost sm" data-act="editrut" data-id="${r.id}">Editar</button><button class="btn ghost sm" data-act="delrut" data-id="${r.id}">Eliminar</button></div>`}
   </section>`).join("");
-  return `<button class="btn block" data-act="newrut">+ Nueva rutina</button>${cards||'<section class="card"><p class="empty">Crea tu primera rutina: ponle nombre, elige los días y añade ejercicios con series, repeticiones y peso objetivo.</p></section>'}`;
+  return `<button class="btn block" data-act="newrut">+ Nueva rutina</button>${rs.length>1?'<p class="muted" style="margin:0;font-size:.85rem;text-align:center">Arrastra ⠿ para ordenar tus rutinas.</p>':""}<div class="stack" data-lista="rutinas">${cards}</div>${cards?"":'<section class="card"><p class="empty">Crea tu primera rutina: ponle nombre, elige los días y añade ejercicios con series, repeticiones y peso objetivo.</p></section>'}`;
 }
 function vEditor(){
-  const rows=E.ejercicios.map((e,i)=>`<div class="ej-edit">
+  const rows=E.ejercicios.map((e,i)=>`<div class="ej-edit" data-item="${i}">${DRAG}
     <input class="ej-name" id="en${i}" data-e="${i}.nombre" value="${esc(e.nombre)}" placeholder="Ejercicio" aria-label="Ejercicio">
     <input id="es${i}" data-e="${i}.series" type="number" inputmode="numeric" value="${esc(e.series)}" placeholder="Series" aria-label="Series">
     <input id="er${i}" data-e="${i}.reps" type="number" inputmode="numeric" value="${esc(e.reps)}" placeholder="Reps" aria-label="Repeticiones">
@@ -354,8 +410,8 @@ function vEditor(){
     <label class="f">Nombre<input id="eNombre" data-e="nombre" value="${esc(E.nombre)}" placeholder="Ej. Pierna"></label>
     <div class="f" style="font-size:.8rem;color:var(--muted);font-weight:600">Días<div class="days" style="margin-top:4px">${DIAS.map((d,i)=>`<button class="day ${E.dias.includes(i)?"on":""}" data-act="dia" data-i="${i}" aria-pressed="${E.dias.includes(i)}" aria-label="${DIAS_L[i]}">${d}</button>`).join("")}</div></div>
     <div class="stack" style="gap:8px">
-      <div class="ej-edit ej-head"><span>Ejercicio</span><span>Series</span><span>Reps</span><span>kg</span><span></span></div>
-      ${rows}
+      <div class="ej-edit ej-head"><span></span><span>Ejercicio</span><span>Series</span><span>Reps</span><span>kg</span><span></span></div>
+      <div class="stack" style="gap:8px" data-lista="ejercicios">${rows}</div>
       <button class="btn ghost" data-act="ej-add">+ Añadir ejercicio</button>
     </div>
     <div class="row"><button class="btn" data-act="saverut">Guardar rutina</button><button class="btn ghost" data-act="cancelrut">Cancelar</button></div>
