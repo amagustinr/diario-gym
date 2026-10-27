@@ -218,7 +218,15 @@ function tipInstalar(){
     <p style="margin:0">En Safari toca <b>Compartir</b> (el cuadrado con la flecha) y luego <b>Añadir a pantalla de inicio</b>.</p>
     <button class="link" data-act="tip-ok" style="align-self:flex-start">Entendido</button></section>`;
 }
-if("serviceWorker" in navigator&&location.protocol==="https:")navigator.serviceWorker.register("sw.js").catch(()=>{});
+const VERSION="dev";
+if("serviceWorker" in navigator&&(location.protocol==="https:"||location.hostname==="localhost")){
+  // Cuando se publica una versión nueva, el service worker nuevo toma el control y la página se recarga una vez
+  const habiaSW=!!navigator.serviceWorker.controller;let recargado=false;
+  navigator.serviceWorker.addEventListener("controllerchange",()=>{if(habiaSW&&!recargado&&!arr&&!E){recargado=true;location.reload()}});
+  navigator.serviceWorker.register("sw.js",{updateViaCache:"none"}).then(r=>{
+    document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible")r.update().catch(()=>{})});
+  }).catch(()=>{});
+}
 /* ---------- Ordenar arrastrando (rutinas y ejercicios de una rutina) ---------- */
 // El bloque sigue al dedo saltando de hueco en hueco; al soltar se guarda el nuevo orden.
 let arr=null;
@@ -507,7 +515,8 @@ function vPeso(){
     <button class="btn ghost" data-act="saveperfil">Guardar perfil</button>
     <p class="muted" style="margin:0;font-size:.8rem">El % de grasa se estima con la fórmula de Deurenberg: 1,2 × IMC + 0,23 × edad − 10,8 × sexo (1 hombre, 0 mujer) − 5,4. Es una aproximación: si tienes mucha masa muscular, el IMC sobreestima la grasa.</p>
   </section>
-  <section class="card"><h2>Historial</h2><div class="hist">${lista||'<p class="empty">Aún no hay registros. Anota tu peso de hoy arriba.</p>'}</div></section>`;
+  <section class="card"><h2>Historial</h2><div class="hist">${lista||'<p class="empty">Aún no hay registros. Anota tu peso de hoy arriba.</p>'}</div></section>
+  <p class="muted" style="margin:0;text-align:center;font-size:.75rem">Versión ${esc(VERSION)}</p>`;
 }
 
 /* ---------- Acciones ---------- */
