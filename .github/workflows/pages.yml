@@ -24,9 +24,12 @@ jobs:
     steps:
       - uses: actions/checkout@v5
 
-      # Cada publicación cambia la versión del caché del service worker para que los teléfonos tomen la versión nueva
+      # Cada publicación cambia la versión del caché del service worker y de los archivos para que los teléfonos tomen la versión nueva
       - name: Versionar caché
-        run: sed -i "s/diario-gym-v1/diario-gym-${{ github.run_number }}/" web/sw.js
+        run: |
+          sed -i "s/diario-gym-v1/diario-gym-${{ github.run_number }}/" web/sw.js
+          sed -i "s/?v=dev/?v=${{ github.run_number }}/g" web/index.html
+          sed -i 's/const VERSION="dev"/const VERSION="${{ github.run_number }}"/' web/app.js
 
       - uses: actions/configure-pages@v5
 
